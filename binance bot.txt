@@ -1,0 +1,25 @@
+binance bot
+
+başlatma
+cd C:\Users\Furka\OneDrive\Masaüstü\TradingBot
+python web_app.py
+
+asdedcdsacde--0012580
+1770334089048990235
+
+api key
+6GzbcJqV9UGJhbAPvYYo2rwjB3LE2ogqAiQMs5iXu5J6rNHtVMNzuZkyTAd7DhQF
+secret key
+lPcReuw8USNLuqh23A9qok9mgsVrhctyg47uVDhx7Hh51UL7n03fOt8OV4x0Qj69
+
+
+API_KEY = '6GzbcJqV9UGJhbAPvYYo2rwjB3LE2ogqAiQMs5iXu5J6rNHtVMNzuZkyTAd7DhQF'
+API_SECRET = 'lPcReuw8USNLuqh23A9qok9mgsVrhctyg47uVDhx7Hh51UL7n03fOt8OV4x0Qj69'
+TEST_MODE = True
+
+http://localhost:5000/
+telefon için: aynı wifi de 192.168.0.14:5000
+
+telegram api:
+8533551775:AAFRuLupVA7DbC_fvG8TpQCmsiEyBolQlJE
+Telegram ID: 1711561346

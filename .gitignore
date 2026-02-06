@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env              # ← API key'ler GitHub'a gitmesin!
+.env.local
+.venv/
+venv/
+ENV/
+env/
+*.log
+ai_models/*.pkl
+backtest_results/*.json
+data/
+logs/
