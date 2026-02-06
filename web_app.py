@@ -3,6 +3,17 @@
 # ==========================================
 
 import os
+
+base_url = os.getenv('BINANCE_TESTNET_URL', 'https://testnet.binance.vision/api')
+
+client = Client(
+    API_KEY,
+    API_SECRET,
+    testnet=True,
+    base_url=base_url
+)
+
+
 import sys
 import time
 import threading
