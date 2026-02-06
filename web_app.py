@@ -3,17 +3,6 @@
 # ==========================================
 
 import os
-
-base_url = os.getenv('BINANCE_TESTNET_URL', 'https://testnet.binance.vision/api')
-
-client = Client(
-    API_KEY,
-    API_SECRET,
-    testnet=True,
-    base_url=base_url
-)
-
-
 import sys
 import time
 import threading
@@ -26,16 +15,11 @@ from binance.client import Client
 from binance.enums import *
 from dotenv import load_dotenv
 
+# .env dosyasını yükle
 load_dotenv()
 
-# Modülleri içe aktar
-from ai_engine import AITradingEngine
-from multi_timeframe import MultiTimeframeAnalyzer
-from backtest_engine import AdvancedBacktest
-from telegram_bot import AdvancedTelegramBot
-
 # ==========================================
-# AYARLAR
+# ORTAM DEĞİŞKENLERİNİ OKU (ÖNCE BUNLAR!)
 # ==========================================
 
 API_KEY = os.getenv('API_KEY')
@@ -44,12 +28,26 @@ TEST_MODE = os.getenv('TEST_MODE', 'true').lower() == 'true'
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
+# Kontrol
 if not API_KEY or not API_SECRET:
     print("❌ API_KEY ve API_SECRET bulunamadı! .env dosyasını kontrol et.")
     sys.exit(1)
 
 print(f"🔑 API Key: {API_KEY[:10]}...")
 print(f"💰 Test Modu: {TEST_MODE}")
+
+# ==========================================
+# MODÜLLERİ İÇE AKTAR
+# ==========================================
+
+from ai_engine import AITradingEngine
+from multi_timeframe import MultiTimeframeAnalyzer
+from backtest_engine import AdvancedBacktest
+from telegram_bot import AdvancedTelegramBot
+
+# ==========================================
+# FLASK AYARLARI
+# ==========================================
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'elmas-bot-pro-secret-2024'
@@ -103,11 +101,11 @@ current_data = {
 
 class ElmasBot:
     def __init__(self):
-        self.client = Client(API_KEY, API_SECRET, testnet=TEST_MODE)
-        self.ai = AITradingEngine()
-        self.tf_analyzer = MultiTimeframeAnalyzer(self.client)
-        self.backtest = AdvancedBacktest()
-        self.telegram = AdvancedTelegramBot(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
+        self.client = Client(
+            API_KEY, 
+            API_SECRET,
+            testnet=TEST_MODE
+        )
         
         self.coins = {
             'BTCUSDT': {'position': None, 'entry_price': 0, 'amount': 0},
