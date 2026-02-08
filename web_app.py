@@ -110,7 +110,6 @@ class ElmasBot:
             # Gerçek mod
             self.client = Client(API_KEY, API_SECRET, testnet=False)
             self.log("💰 GERÇEK MOD - Gerçek işlemler!")
-        )
         
         self.coins = {
             'BTCUSDT': {'position': None, 'entry_price': 0, 'amount': 0},
