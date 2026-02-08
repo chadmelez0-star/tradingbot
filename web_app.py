@@ -15,26 +15,6 @@ from binance.client import Client
 from binance.enums import *
 from dotenv import load_dotenv
 
-# ==========================================
-# TESTNET DNS SORUNU ÇÖZÜMÜ
-# ==========================================
-
-# TestNet çalışmıyorsa gerçek API'ye yönlendir
-def patch_binance_client():
-    from binance import client
-    original_init = client.Client.__init__
-    
-    def patched_init(self, api_key, api_secret, testnet=False, **kwargs):
-        # TestNet istenirse bile gerçek API'ye bağlan
-        if testnet:
-            print("⚠️ TestNet devre dışı, gerçek API kullanılıyor")
-            testnet = False
-        original_init(self, api_key, api_secret, testnet=testnet, **kwargs)
-    
-    client.Client.__init__ = patched_init
-
-patch_binance_client()
-
 # .env dosyasını yükle
 load_dotenv()
 
@@ -121,15 +101,12 @@ current_data = {
 
 class ElmasBot:
     def __init__(self):
-        # TEST_MODE'e göre ayarla
-        if TEST_MODE:
-            # Test modu: Gerçek API'ye bağlan ama işlem yapma
-            self.client = Client(API_KEY, API_SECRET, testnet=False)
-            self.log("🧪 TEST MODU - Gerçek API, simülasyon işlemler")
-        else:
-            # Gerçek mod
-            self.client = Client(API_KEY, API_SECRET, testnet=False)
-            self.log("💰 GERÇEK MOD - Gerçek işlemler!")
+        # TestNet'i tamamen devre dışı bırak
+        import binance.client
+        binance.client.BASE_ENDPOINTS['testnet'] = 'https://api.binance.com/api'
+        
+        self.client = Client(API_KEY, API_SECRET, testnet=False)
+        # ...
         
         self.coins = {
             'BTCUSDT': {'position': None, 'entry_price': 0, 'amount': 0},
