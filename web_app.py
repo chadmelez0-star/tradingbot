@@ -351,24 +351,24 @@ class ElmasBot:
         coin = self.coins[symbol]
         coin_key = symbol.replace('USDT', '').lower()
 
-    # TEST MODU: Sadece simülasyon
-    if TEST_MODE:
-        if signal in ['AL', 'GÜÇLÜ AL'] and coin['position'] is None:
-            self.log(f"🧪 TEST ALIM: {symbol} @ ${price:,.2f}")
-            # Pozisyonu simüle et
-            coin['position'] = 'LONG'
-            coin['entry_price'] = price
-            coin['amount'] = 0.001  # Sabit test miktarı
-            return True
+        # TEST MODU: Sadece simülasyon
+        if TEST_MODE:
+            if signal in ['AL', 'GÜÇLÜ AL'] and coin['position'] is None:
+                self.log(f"🧪 TEST ALIM: {symbol} @ ${price:,.2f}")
+                # Pozisyonu simüle et
+                coin['position'] = 'LONG'
+                coin['entry_price'] = price
+                coin['amount'] = 0.001  # Sabit test miktarı
+                return True
             
-        elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
-            pnl = (price - coin['entry_price']) * coin['amount']
-            self.log(f"🧪 TEST SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl:+.2f}")
-            # Pozisyonu kapat
-            coin['position'] = None
-            self.daily_pnl += pnl
-            return True
-        return False
+            elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
+                pnl = (price - coin['entry_price']) * coin['amount']
+                self.log(f"🧪 TEST SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl:+.2f}")
+                # Pozisyonu kapat
+                coin['position'] = None
+                self.daily_pnl += pnl
+                return True
+            return False
     
     # GERÇEK MOD: Normal işlem (eski kodların burada)
     # ... (mevcut alım/satım kodların aynen kalacak)
