@@ -101,10 +101,15 @@ current_data = {
 
 class ElmasBot:
     def __init__(self):
-        self.client = Client(
-            API_KEY, 
-            API_SECRET,
-            testnet=TEST_MODE
+        # TEST_MODE'e göre ayarla
+        if TEST_MODE:
+            # Test modu: Gerçek API'ye bağlan ama işlem yapma
+            self.client = Client(API_KEY, API_SECRET, testnet=False)
+            self.log("🧪 TEST MODU - Gerçek API, simülasyon işlemler")
+        else:
+            # Gerçek mod
+            self.client = Client(API_KEY, API_SECRET, testnet=False)
+            self.log("💰 GERÇEK MOD - Gerçek işlemler!")
         )
         
         self.coins = {
