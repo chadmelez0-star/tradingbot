@@ -365,12 +365,10 @@ class ElmasBot:
                 coin['position'] = None
                 self.daily_pnl += pnl
                 return True
-            return False
-    
-    # GERÇEK MOD: Normal işlem (eski kodların burada)
-    # ... (mevcut alım/satım kodların aynen kalacak)
+            
+            return False  # ← BU SATIR if TEST_MODE: BLOĞUNUN İÇİNDE!
         
-        # Alım koşulları
+        # GERÇEK MOD: Alım koşulları (TEST_MODE dışında)
         if signal in ['AL', 'GÜÇLÜ AL'] and coin['position'] is None:
             if self.today_trades >= self.max_daily_trades:
                 self.log(f"⚠️ Günlük işlem limiti doldu", 'warning')
@@ -387,38 +385,30 @@ class ElmasBot:
                 amount = risk_amount / price
                 amount = round(amount, 6)
                 
-                if TEST_MODE:
-                    self.log(f"🧪 TEST ALIM: {symbol} {amount} @ ${price:,.2f}")
-                    success = True
-                else:
-                    order = self.client.order_market_buy(symbol=symbol, quantity=amount)
-                    success = True
+                # GERÇEK ALIM (TEST_MODE zaten False burada)
+                order = self.client.order_market_buy(symbol=symbol, quantity=amount)
                 
-                if success:
-                    coin['position'] = 'LONG'
-                    coin['entry_price'] = price
-                    coin['amount'] = amount
-                    self.today_trades += 1
-                    
-                    self.log(f"🚀 ALIM: {symbol} {amount} @ ${price:,.2f}", 'trade')
-                    
-                    # Telegram
-                    if self.telegram.enabled:
-                        self.telegram.trade_notification(
-                            symbol, "ALIM", price, amount,
-                            strategy_info=f"Skor: {current_data['market'][coin_key]['final_score']}"
-                        )
-                    
-                    # Ses (iptal edildi)
-                    # socketio.emit('play_sound', {'type': 'buy'})
-                    
-                    return True
-                    
+                coin['position'] = 'LONG'
+                coin['entry_price'] = price
+                coin['amount'] = amount
+                self.today_trades += 1
+                
+                self.log(f"🚀 ALIM: {symbol} {amount} @ ${price:,.2f}", 'trade')
+                
+                # Telegram
+                if self.telegram.enabled:
+                    self.telegram.trade_notification(
+                        symbol, "ALIM", price, amount,
+                        strategy_info=f"Skor: {current_data['market'][coin_key]['final_score']}"
+                    )
+                
+                return True
+                
             except Exception as e:
                 self.log(f"❌ Alım hatası {symbol}: {e}", 'error')
                 return False
         
-        # Satım koşulları
+        # GERÇEK MOD: Satım koşulları
         elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
             try:
                 base_asset = symbol.replace('USDT', '')
@@ -431,24 +421,42 @@ class ElmasBot:
                 pnl_usd = (price - coin['entry_price']) * amount
                 pnl_pct = (price - coin['entry_price']) / coin['entry_price'] * 100
                 
-                if TEST_MODE:
-                    self.log(f"🧪 TEST SATIM: {symbol} {amount} @ ${price:,.2f} | P&L: ${pnl_usd:+.2f}")
-                    success = True
-                else:
-                    order = self.client.order_market_sell(symbol=symbol, quantity=amount)
-                    success = True
+                # GERÇEK SATIM
+                order = self.client.order_market_sell(symbol=symbol, quantity=amount)
                 
-                if success:
-                    coin['position'] = None
-                    self.daily_pnl += pnl_usd
-                    
-                    # Stats güncelle
-                    current_data['stats']['today_trades'] += 1
-                    if pnl_usd > 0:
-                        current_data['stats']['winning_trades'] += 1
-                    else:
-                        current_data['stats']['losing_trades'] += 1
-                    
+                coin['position'] = None
+                self.daily_pnl += pnl_usd
+                
+                # Stats güncelle
+                current_data['stats']['today_trades'] += 1
+                if pnl_usd > 0:
+                    current_data['stats']['winning_trades'] += 1
+                else:
+                    current_data['stats']['losing_trades'] += 1
+                
+                total_trades = current_data['stats']['winning_trades'] + current_data['stats']['losing_trades']
+                if total_trades > 0:
+                    current_data['stats']['win_rate'] = round(
+                        current_data['stats']['winning_trades'] / total_trades * 100, 2
+                    )
+                
+                self.log(f"📉 SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl_usd:+.2f} (%{pnl_pct:.2f})", 'trade')
+                
+                # Telegram
+                if self.telegram.enabled:
+                    self.telegram.trade_notification(
+                        symbol, "SATIM", price, amount, pnl_usd,
+                        strategy_info=f"Skor: {current_data['market'][coin_key]['final_score']}"
+                    )
+                
+                return True
+                
+            except Exception as e:
+                self.log(f"❌ Satım hatası {symbol}: {e}", 'error')
+                return False
+        
+        return False
+        
                     total_trades = current_data['stats']['winning_trades'] + current_data['stats']['losing_trades']
                     if total_trades > 0:
                         current_data['stats']['win_rate'] = round(
