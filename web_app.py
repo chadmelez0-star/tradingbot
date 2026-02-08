@@ -344,69 +344,78 @@ class ElmasBot:
             return 50
     
     def execute_trade(self, symbol, signal, price):
-        """İşlem yürüt"""
+        """İşlem yürüt - TEST MODU DESTEKLİ"""
         coin = self.coins[symbol]
         coin_key = symbol.replace('USDT', '').lower()
-
+        
         # TEST MODU: Sadece simülasyon
         if TEST_MODE:
             if signal in ['AL', 'GÜÇLÜ AL'] and coin['position'] is None:
                 self.log(f"🧪 TEST ALIM: {symbol} @ ${price:,.2f}")
-                # Pozisyonu simüle et
                 coin['position'] = 'LONG'
                 coin['entry_price'] = price
-                coin['amount'] = 0.001  # Sabit test miktarı
+                coin['amount'] = 0.001
                 return True
-            
             elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
                 pnl = (price - coin['entry_price']) * coin['amount']
                 self.log(f"🧪 TEST SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl:+.2f}")
-                # Pozisyonu kapat
                 coin['position'] = None
                 self.daily_pnl += pnl
                 return True
-            
-            return False  # ← BU SATIR if TEST_MODE: BLOĞUNUN İÇİNDE!
+            return False
         
-        # GERÇEK MOD: Alım koşulları (TEST_MODE dışında)
+        # GERÇEK MOD: Alım
         if signal in ['AL', 'GÜÇLÜ AL'] and coin['position'] is None:
             if self.today_trades >= self.max_daily_trades:
                 self.log(f"⚠️ Günlük işlem limiti doldu", 'warning')
                 return False
-            
             try:
                 usdt_balance = self.get_balance('USDT')
                 if usdt_balance < 10:
-                    self.log(f"❌ {symbol} Yetersiz USDT bakiyesi", 'error')
+                    self.log(f"❌ {symbol} Yetersiz bakiye", 'error')
                     return False
-                
-                # Risk yönetimi: %10 pozisyon
                 risk_amount = usdt_balance * 0.1
-                amount = risk_amount / price
-                amount = round(amount, 6)
-                
-                # GERÇEK ALIM (TEST_MODE zaten False burada)
+                amount = round(risk_amount / price, 6)
                 order = self.client.order_market_buy(symbol=symbol, quantity=amount)
-                
                 coin['position'] = 'LONG'
                 coin['entry_price'] = price
                 coin['amount'] = amount
                 self.today_trades += 1
-                
                 self.log(f"🚀 ALIM: {symbol} {amount} @ ${price:,.2f}", 'trade')
-                
-                # Telegram
                 if self.telegram.enabled:
-                    self.telegram.trade_notification(
-                        symbol, "ALIM", price, amount,
-                        strategy_info=f"Skor: {current_data['market'][coin_key]['final_score']}"
-                    )
-                
+                    self.telegram.trade_notification(symbol, "ALIM", price, amount)
                 return True
-                
             except Exception as e:
-                self.log(f"❌ Alım hatası {symbol}: {e}", 'error')
+                self.log(f"❌ Alım hatası: {e}", 'error')
                 return False
+        
+        # GERÇEK MOD: Satım
+        elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
+            try:
+                amount = coin['amount']
+                if amount <= 0:
+                    return False
+                pnl_usd = (price - coin['entry_price']) * amount
+                order = self.client.order_market_sell(symbol=symbol, quantity=amount)
+                coin['position'] = None
+                self.daily_pnl += pnl_usd
+                current_data['stats']['today_trades'] += 1
+                if pnl_usd > 0:
+                    current_data['stats']['winning_trades'] += 1
+                else:
+                    current_data['stats']['losing_trades'] += 1
+                total = current_data['stats']['winning_trades'] + current_data['stats']['losing_trades']
+                if total > 0:
+                    current_data['stats']['win_rate'] = round(current_data['stats']['winning_trades'] / total * 100, 2)
+                self.log(f"📉 SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl_usd:+.2f}", 'trade')
+                if self.telegram.enabled:
+                    self.telegram.trade_notification(symbol, "SATIM", price, amount, pnl_usd)
+                return True
+            except Exception as e:
+                self.log(f"❌ Satım hatası: {e}", 'error')
+                return False
+        
+        return False
         
         # GERÇEK MOD: Satım koşulları
         elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
