@@ -15,6 +15,26 @@ from binance.client import Client
 from binance.enums import *
 from dotenv import load_dotenv
 
+# ==========================================
+# TESTNET DNS SORUNU ÇÖZÜMÜ
+# ==========================================
+
+# TestNet çalışmıyorsa gerçek API'ye yönlendir
+def patch_binance_client():
+    from binance import client
+    original_init = client.Client.__init__
+    
+    def patched_init(self, api_key, api_secret, testnet=False, **kwargs):
+        # TestNet istenirse bile gerçek API'ye bağlan
+        if testnet:
+            print("⚠️ TestNet devre dışı, gerçek API kullanılıyor")
+            testnet = False
+        original_init(self, api_key, api_secret, testnet=testnet, **kwargs)
+    
+    client.Client.__init__ = patched_init
+
+patch_binance_client()
+
 # .env dosyasını yükle
 load_dotenv()
 
