@@ -4,6 +4,7 @@
 
 import pandas as pd
 import numpy as np
+import time
 from binance.enums import *
 
 class MultiTimeframeAnalyzer:
