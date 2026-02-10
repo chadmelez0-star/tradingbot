@@ -101,27 +101,25 @@ current_data = {
 
 class ElmasBot:
     def __init__(self):
-        # TestNet'i tamamen devre dışı bırak
-        import binance.client
-        binance.client.BASE_ENDPOINTS['testnet'] = 'https://api.binance.com/api'
-        
+        # TestNet ayarı kaldırıldı - doğrudan ana API kullan
         self.client = Client(API_KEY, API_SECRET, testnet=False)
-        
-        # EKSİK TANIMLAMALAR - BUNLAR EKLENDİ
+    
+        # Eksik tanımlamalar
         self.ai = AITradingEngine()
         self.tf_analyzer = MultiTimeframeAnalyzer(self.client)
         self.backtest = AdvancedBacktest()
         self.telegram = AdvancedTelegramBot(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
-        
+    
         self.coins = {
             'BTCUSDT': {'position': None, 'entry_price': 0, 'amount': 0},
             'ETHUSDT': {'position': None, 'entry_price': 0, 'amount': 0},
             'SOLUSDT': {'position': None, 'entry_price': 0, 'amount': 0}
         }
-        
+    
         self.max_daily_trades = 10
         self.today_trades = 0
         self.daily_pnl = 0
+        self.training_data = {}
         
         # AI eğitim verisi toplama
         self.training_data = {}
