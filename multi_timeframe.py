@@ -55,7 +55,7 @@ class MultiTimeframeAnalyzer:
                 # En az %80'i geçerli mi?
                 valid_ratio = df['close'].notna().sum() / len(df)
                 if valid_ratio < 0.8:
-                    self.log(f"  ⚠️ {symbol} {interval}: Çok fazla eksik veri (%{valid_ratio*100:.0f})")
+                    print(f"  ⚠️ {symbol} {interval}: Çok fazla eksik veri (%{valid_ratio*100:.0f})")
                     return None
                 
                 return df
