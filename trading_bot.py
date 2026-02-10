@@ -12,14 +12,6 @@ from datetime import datetime
 import requests
 
 # ==========================================
-# API AYARLARI - BUNLARI DEĞİŞTİRİN
-# ==========================================
-
-API_KEY = '6GzbcJqV9UGJhbAPvYYo2rwjB3LE2ogqAiQMs5iXu5J6rNHtVMNzuZkyTAd7DhQF'  # YENİ API KEY YAZIN
-API_SECRET = 'lPcReuw8USNLuqh23A9qok9mgsVrhctyg47uVDhx7Hh51UL7n03fOt8OV4x0Qj69'  # YENİ SECRET YAZIN
-TEST_MODE = True  # Test modu - Gerçek para kullanılmaz
-
-# ==========================================
 # RİSK YÖNETİMİ
 # ==========================================
 
