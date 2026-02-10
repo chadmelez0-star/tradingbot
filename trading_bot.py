@@ -11,6 +11,12 @@ from binance.enums import *
 from datetime import datetime
 import requests
 
+
+API_KEY = os.getenv('API_KEY', '')
+API_SECRET = os.getenv('API_SECRET', '')
+TEST_MODE = os.getenv('TEST_MODE', 'true').lower() == 'true'
+
+
 # ==========================================
 # RİSK YÖNETİMİ
 # ==========================================
