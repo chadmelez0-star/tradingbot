@@ -194,13 +194,13 @@ class AITradingEngine:
         n_estimators = min(50, max(20, len(X) // 500))  # ← Veri boyutuna göre ayarla Eskisi böyleydi deneme amacıyla düşürüldü.200, max(50, len(X) // 100
         
         self.model = RandomForestClassifier(
-            n_estimators=n_estimators,
-            max_depth=12,
-            min_samples_split=20,
-            min_samples_leaf=10,
+            n_estimators=30, #n_estimators
+            max_depth=8,#12
+            min_samples_split=50,#20
+            min_samples_leaf=20,#10
             random_state=42,
             n_jobs=-1,
-            class_weight='balanced_subsample'  # ← Dengesiz veri için daha iyi
+            class_weight='balanced'  # ← Dengesiz veri için daha iyi #balanced_subsample
         )
         
         print(f"\n🤖 Model eğitiliyor ({n_estimators} ağaç)...")
