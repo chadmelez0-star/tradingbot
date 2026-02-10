@@ -508,7 +508,7 @@ class ElmasBot:
                     if result:
                         coin_key = symbol.replace('USDT', '').lower()
                         current_data['market'][coin_key] = result
-                        
+                        self.execute_trade(symbol, result['signal'], result['price'])
 
                 # Portföy güncelle
                 self.update_portfolio()
