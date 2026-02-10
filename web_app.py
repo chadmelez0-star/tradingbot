@@ -106,7 +106,12 @@ class ElmasBot:
         binance.client.BASE_ENDPOINTS['testnet'] = 'https://api.binance.com/api'
         
         self.client = Client(API_KEY, API_SECRET, testnet=False)
-        # ...
+        
+        # EKSİK TANIMLAMALAR - BUNLAR EKLENDİ
+        self.ai = AITradingEngine()
+        self.tf_analyzer = MultiTimeframeAnalyzer(self.client)
+        self.backtest = AdvancedBacktest()
+        self.telegram = AdvancedTelegramBot(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
         
         self.coins = {
             'BTCUSDT': {'position': None, 'entry_price': 0, 'amount': 0},
@@ -143,11 +148,11 @@ class ElmasBot:
         
         self.training_data = {}
         
-        symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT']  # ← 5 coin
+        symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'BNBUSDT', 'ADAUSDT']
         timeframes = [
-            (Client.KLINE_INTERVAL_5MINUTE, 1000),   # ← 5m eklendi
-            (Client.KLINE_INTERVAL_15MINUTE, 1000),  # ← Daha fazla veri
-            (Client.KLINE_INTERVAL_1HOUR, 500),      # ← Tekrar denenecek
+            (Client.KLINE_INTERVAL_5MINUTE, 1000),
+            (Client.KLINE_INTERVAL_15MINUTE, 1000),
+            (Client.KLINE_INTERVAL_1HOUR, 500),
         ]
         
         total_collected = 0
@@ -158,7 +163,7 @@ class ElmasBot:
                     self.log(f"  📥 {symbol} {interval} verisi çekiliyor...")
                     df = self.tf_analyzer.get_data(symbol, interval, limit)
                     
-                    if df is not None and len(df) > 100:  # ← Minimum 100
+                    if df is not None and len(df) > 100:
                         key = f"{symbol}_{interval}"
                         self.training_data[key] = df
                         total_collected += len(df)
@@ -170,7 +175,7 @@ class ElmasBot:
                     self.log(f"  ❌ Veri hatası {symbol} {interval}: {e}", 'warning')
         
         self.log(f"✅ Toplam {len(self.training_data)} veri seti, {total_collected} kayıt toplandı")
-        return len(self.training_data) >= 3  # ← En az 3 set olsun
+        return len(self.training_data) >= 3
 
     def train_ai(self):
         """AI modelini eğit - DÜZELTİLMİŞ"""
@@ -392,34 +397,6 @@ class ElmasBot:
         # GERÇEK MOD: Satım
         elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
             try:
-                amount = coin['amount']
-                if amount <= 0:
-                    return False
-                pnl_usd = (price - coin['entry_price']) * amount
-                order = self.client.order_market_sell(symbol=symbol, quantity=amount)
-                coin['position'] = None
-                self.daily_pnl += pnl_usd
-                current_data['stats']['today_trades'] += 1
-                if pnl_usd > 0:
-                    current_data['stats']['winning_trades'] += 1
-                else:
-                    current_data['stats']['losing_trades'] += 1
-                total = current_data['stats']['winning_trades'] + current_data['stats']['losing_trades']
-                if total > 0:
-                    current_data['stats']['win_rate'] = round(current_data['stats']['winning_trades'] / total * 100, 2)
-                self.log(f"📉 SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl_usd:+.2f}", 'trade')
-                if self.telegram.enabled:
-                    self.telegram.trade_notification(symbol, "SATIM", price, amount, pnl_usd)
-                return True
-            except Exception as e:
-                self.log(f"❌ Satım hatası: {e}", 'error')
-                return False
-        
-        return False
-        
-        # GERÇEK MOD: Satım koşulları
-        elif signal in ['SAT', 'GÜÇLÜ SAT'] and coin['position'] == 'LONG':
-            try:
                 base_asset = symbol.replace('USDT', '')
                 amount = coin['amount']
                 
@@ -460,29 +437,6 @@ class ElmasBot:
                 
                 return True
                 
-            except Exception as e:
-                self.log(f"❌ Satım hatası {symbol}: {e}", 'error')
-                return False
-        
-        return False
-        
-                    total_trades = current_data['stats']['winning_trades'] + current_data['stats']['losing_trades']
-                    if total_trades > 0:
-                        current_data['stats']['win_rate'] = round(
-                            current_data['stats']['winning_trades'] / total_trades * 100, 2
-                        )
-                    
-                    self.log(f"📉 SATIM: {symbol} @ ${price:,.2f} | P&L: ${pnl_usd:+.2f} (%{pnl_pct:.2f})", 'trade')
-                    
-                    # Telegram
-                    if self.telegram.enabled:
-                        self.telegram.trade_notification(
-                            symbol, "SATIM", price, amount, pnl_usd,
-                            strategy_info=f"Skor: {current_data['market'][coin_key]['final_score']}"
-                        )
-                    
-                    return True
-                    
             except Exception as e:
                 self.log(f"❌ Satım hatası {symbol}: {e}", 'error')
                 return False
