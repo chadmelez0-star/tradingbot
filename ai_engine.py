@@ -191,7 +191,7 @@ class AITradingEngine:
         X_test_scaled = self.scaler.transform(X_test)
         
         # Daha büyük veri için optimize model
-        n_estimators = min(200, max(50, len(X) // 100))  # ← Veri boyutuna göre ayarla
+        n_estimators = min(50, max(20, len(X) // 500))  # ← Veri boyutuna göre ayarla Eskisi böyleydi deneme amacıyla düşürüldü.200, max(50, len(X) // 100
         
         self.model = RandomForestClassifier(
             n_estimators=n_estimators,
