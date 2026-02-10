@@ -121,8 +121,6 @@ class ElmasBot:
         self.daily_pnl = 0
         self.training_data = {}
         
-        # AI eğitim verisi toplama
-        self.training_data = {}
         
     def log(self, message, level='info'):
         """Log kaydı"""
